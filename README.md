@@ -1,7 +1,7 @@
 # README
 
 ## Overview
-This project consists of analyses in STATES (Spatially-resolved transcriptomics and translatomics employed simultaneously)
+This project consists of analyses in STATES (Spatially-resolved transcriptomics and translatomics employed simultaneously).
 
 ## Cellline Analysis
 
@@ -32,8 +32,7 @@ Key resources:
   - Generate the final output.
 
 ### Downstream 
-### Downstream  
-The downstream analysis for spatial samples is organized into four main folders. It includes data preprocessing, stress trajectory modeling, TE (translation efficiency) and total RNA comparison, and subcellular localization analysis.
+The downstream analysis for cell lines is organized into four main modules. It includes data preprocessing, stress trajectory modeling, TE (translation efficiency) and total RNA comparison, and subcellular localization analysis.
 
 #### Step-by-Step Process  
 - **01_preprocessing**:  
@@ -49,7 +48,7 @@ The downstream analysis for spatial samples is organized into four main folders.
   - `01_wilcoxon_totalRNA.ipynb`: Perform differential expression analysis on total RNA.  
   - `02_wilcoxon_TE.ipynb`: Identify genes with significant TE differences.  
   - `03_geneclustering.R`: Cluster genes based on TE and totalRNA.  
-  - `04_overlap.R`: Draw a Venn diagram to visualize the overlap between two sets of differentially expressed genes, and perform a hypergeometric test to assess the statistical significance of the intersection.  
+  - `04_overlap.R`: Visualize gene set overlap with a Venn diagram and assess significance via a hypergeometric test.  
   - `05_geneinpseudotime.ipynb`: Visualize gene-level TE and totalRNA expression along pseudotime.  
   - `06_GO.R`: Conduct Gene Ontology enrichment for significant gene clusters.
 
