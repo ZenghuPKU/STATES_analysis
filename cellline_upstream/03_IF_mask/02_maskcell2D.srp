@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH -p fat4way
+#SBATCH -o maskcell_%j.out        
+#SBATCH -e maskcell_%j.err        
+#SBATCH -N 1 
+#SBATCH --no-requeue
+#SBATCH -A huzeng_g1
+#SBATCH --qos=huzengf4w
+#SBATCH -c 5
+
+/appsnew/home/huzeng_pkuhpc/mambaforge/envs/sopa/bin/python test_cellpose_batch_test.py -i "02_registration/IF/flamingo/flamingobig2dnew.tif" -d cpu -p maskcell -o maskcell -D 300 -MD cellpose_model -C 5 -R 0 -T cell
+

@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH -p fat4way
+#SBATCH -o maskdapi_%j.out       
+#SBATCH -e maskdapi_%j.err        
+#SBATCH -N 1 
+#SBATCH --no-requeue
+#SBATCH -A huzeng_g1
+#SBATCH --qos=huzengf4w
+#SBATCH -c 5
+
+/appsnew/home/huzeng_pkuhpc/mambaforge/envs/sopa/bin/python test_cellpose_batch_test.py -i "02_registration/IF/dapi/dapibig2dnew.tif" -d cpu -p masknucleitorch -o masknucleitorch -D 150 -MD cellpose_model -M nucleitorch_0 -C 5 -R 0 -T nuclei
+

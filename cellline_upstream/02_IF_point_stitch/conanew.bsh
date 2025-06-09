@@ -1,0 +1,9 @@
+mpicbg.stitching.GlobalOptimization.ignoreZ = true;
+print("Set mpicbg.stitching.GlobalOptimization.ignoreZ = true;");
+
+import ij.IJ;
+
+String macroPath = "Macrocona.ijm";
+print("Running macro script: " + macroPath);
+IJ.runMacroFile(macroPath);
+print("Finished running macro script.");

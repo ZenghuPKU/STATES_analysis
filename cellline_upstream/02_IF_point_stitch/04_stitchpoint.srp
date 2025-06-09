@@ -1,0 +1,11 @@
+#!/bin/bash
+#SBATCH -p fat4way
+#SBATCH -o stitchpoint_%j.out        
+#SBATCH -e stitchpoint_%j.err        
+#SBATCH -N 1 
+#SBATCH --no-requeue
+#SBATCH -A huzeng_g1
+#SBATCH --qos=huzengf4w
+#SBATCH -c 5
+
+matlab -batch "run('stitchpointnewbjx.m')"
