@@ -40,7 +40,7 @@ cell_groups <- list(
 group_names <- names(cell_groups)
 summary_list <- list()
 
-# Pairwise group comparisons
+# Pairwise group comparisons for TE between cell groups
 for (i in 1:(length(group_names) - 1)) {
   for (j in (i + 1):length(group_names)) {
     name1 <- group_names[i]
@@ -54,29 +54,32 @@ for (i in 1:(length(group_names) - 1)) {
     
     cat("\n========= Comparing:", name1, "vs", name2, "=========\n")
     
+    # Select cells belonging to the two groups
     target_cells <- colnames(te_matrix)[cell_labels %in% group1]
     other_cells <- colnames(te_matrix)[cell_labels %in% group2]
     
-    # Filter genes: ≥5% of group cells with totalRNA ≥ 1
+    # Filter genes: require at least 5% of group1 cells with totalRNA count >= 1
     states_sub <- totalRNA_matrix[selected_genes, target_cells]
     min_cells_expr <- ceiling(length(target_cells) * 0.05)
     genes_pass_filter <- rownames(states_sub)[rowSums(states_sub >= 1, na.rm = TRUE) >= min_cells_expr]
     
     cat("Number of genes passing filter", length(genes_pass_filter), "\n")
-    if (length(genes_pass_filter) < 10) next
+    if (length(genes_pass_filter) < 10) next  # Skip if too few genes pass filter
     
-    # Calculate logFC and p 
+    # Initialize vectors to store log fold change and p-values
     logfc_vec <- numeric(length(genes_pass_filter))
     pval_vec <- numeric(length(genes_pass_filter))
     names(logfc_vec) <- genes_pass_filter
     names(pval_vec) <- genes_pass_filter
     
+    # Calculate log2 fold change and Wilcoxon test p-values for each gene
     for (gene in genes_pass_filter) {
       te_target <- te_matrix[gene, target_cells]
       te_other <- te_matrix[gene, other_cells]
       te_target <- te_target[!is.na(te_target)]
       te_other <- te_other[!is.na(te_other)]
       
+      # Require at least 5 cells per group for comparison
       if (length(te_target) >= 5 && length(te_other) >= 5) {
         logfc_vec[gene] <- log2(mean(te_target) + 1e-6) - log2(mean(te_other) + 1e-6)
         pval_vec[gene] <- wilcox.test(te_target, te_other)$p.value
@@ -86,49 +89,56 @@ for (i in 1:(length(group_names) - 1)) {
       }
     }
     
-    # Organize results
+    # Adjust p-values using Benjamini-Hochberg FDR correction
+    fdr_vec <- p.adjust(pval_vec, method = "BH")
+    
+    # Organize results into a data frame
     result_df <- data.frame(
       Gene = genes_pass_filter,
       logFC = logfc_vec,
-      pvalue = pval_vec
+      pvalue = pval_vec,
+      FDR = fdr_vec  
     ) %>%
       mutate(
-        negLogP = -log10(pvalue),
+        # Calculate -log10(FDR) for volcano plot y-axis
+        negLogFDR = -log10(FDR),
+        # Assign significance labels based on logFC and FDR thresholds
         Sig = case_when(
-          logFC > 0.5 & pvalue < 0.05 ~ "Up",
-          logFC < -0.5 & pvalue < 0.05 ~ "Down",
+          logFC > 0.5 & FDR < 0.05 ~ "Up",      
+          logFC < -0.5 & FDR < 0.05 ~ "Down",   
           TRUE ~ "NS"
         )
       )
     
+    # Save results to CSV file
     write.csv(result_df, paste0("TE_logFC_", safe_name, ".csv"), row.names = FALSE)
     n_genes_used <- nrow(result_df)
     
-    # Cap values
+    # Cap extreme values for better visualization
     result_df <- result_df %>%
       mutate(
-        logFC_capped = pmax(pmin(logFC, 4), -4),
-        negLogP_capped = pmin(negLogP, 50)
+        logFC_capped = pmax(pmin(logFC, 4), -4),        # Cap logFC between -4 and 4
+        negLogFDR_capped = pmin(negLogFDR, 50)          # Cap -log10(FDR) at 50
       )
     
-    # Top genes
+    # Select top 5 up- and top 5 down-regulated genes by logFC and FDR < 0.05 for labeling
     top_genes <- result_df %>%
-      filter(pvalue < 0.05) %>%
+      filter(FDR < 0.05) %>%
       arrange(desc(logFC)) %>%
       slice_head(n = 5) %>%
       bind_rows(
         result_df %>%
-          filter(pvalue < 0.05) %>%
+          filter(FDR < 0.05) %>%
           arrange(logFC) %>%
           slice_head(n = 5)
       )
     
-    # Count up- and down-regulated genes
+    # Count number of up- and down-regulated genes
     n_up <- sum(result_df$Sig == "Up", na.rm = TRUE)
     n_down <- sum(result_df$Sig == "Down", na.rm = TRUE)
     
-    # Volcano plot
-    p <- ggplot(result_df, aes(x = logFC_capped, y = negLogP_capped)) +
+    # Generate volcano plot
+    p <- ggplot(result_df, aes(x = logFC_capped, y = negLogFDR_capped)) +
       geom_point(aes(color = Sig), alpha = 0.7, size = 1.2) +
       scale_color_manual(values = c("Up" = "#B2182B", "Down" = "#2166AC", "NS" = "gray")) +
       geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed", color = "black") +
@@ -136,7 +146,7 @@ for (i in 1:(length(group_names) - 1)) {
       scale_x_continuous(limits = c(-4, 4)) +
       scale_y_continuous(limits = c(0, 55)) +
       geom_text_repel(data = top_genes,
-                      aes(x = logFC_capped, y = negLogP_capped, label = Gene),
+                      aes(x = logFC_capped, y = negLogFDR_capped, label = Gene),
                       size = 3, max.overlaps = 100) +
       annotate("text", x = 3.5, y = 55, label = paste0("Up: ", n_up), color = "#B2182B", size = 4, hjust = 1) +
       annotate("text", x = -3.5, y = 55, label = paste0("Down: ", n_down), color = "#2166AC", size = 4, hjust = 0) +
@@ -145,13 +155,14 @@ for (i in 1:(length(group_names) - 1)) {
         title = paste0("TE Volcano Plot: ", comp_name,
                        "\n(", n_genes_used, " genes used, totalRNA≥1 in ≥5%)"),
         x = "log2 Fold Change (TE)",
-        y = "-log10(P-value)",
+        y = "-log10(Adjusted p-value)",
         color = "Significance"
       )
     
+    # Save volcano plot to PDF file
     ggsave(paste0("Volcano_TE_", safe_name, ".pdf"), p, width = 7, height = 6)
     
-    # Collect up- and down-regulated genes for GO analysis
+    # Collect up- and down-regulated genes for downstream GO enrichment analysis
     up_genes <- result_df$Gene[result_df$Sig == "Up"]
     down_genes <- result_df$Gene[result_df$Sig == "Down"]
     
@@ -171,9 +182,11 @@ for (i in 1:(length(group_names) - 1)) {
     }
   }
 }
+
 # Save consolidated up/down-regulated genes
 summary_df <- do.call(rbind, summary_list)
 write.csv(summary_df, "TElogFC_MultiGroupComparisons_UpDownGenes_forGO.csv", row.names = FALSE)
+
 
 # Set up GO output directory
 go_dir <- "./GO/"
@@ -192,7 +205,7 @@ perform_go_analysis <- function(genes, ont) {
   )
 }
 
-# GO results processing function (limit to 10 terms)
+# GO results processing function
 process_go_data <- function(go_data, category) {
   if (nrow(go_data) == 0) return(NULL)
   as.data.frame(go_data) %>%

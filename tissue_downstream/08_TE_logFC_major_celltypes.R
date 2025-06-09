@@ -9,7 +9,7 @@ library(anndata)
 rm(list = ls())
 setwd("~/tissue_downstream/")
 
-# Load the annotated object (states_celltypes_identification.RData), Read h5ad data
+# Load the annotated object and h5ad data
 load("states_celltypes_identification.RData")
 sc_ad <- read_h5ad("mousebrain_harmony.h5ad")
 
@@ -69,21 +69,22 @@ for (target_celltype in cell_types) {
     }
   }
   
-  # Organize results
+  # Organize results with FDR adjustment
   result_df <- data.frame(
     Gene = genes_pass_filter,
     logFC = logfc_vec,
-    pvalue = pval_vec
+    pvalue = pval_vec,
+    FDR = p.adjust(pval_vec, method = "BH")
   ) %>%
     mutate(
-      negLogP = -log10(pvalue),
+      negLogFDR = -log10(FDR),
       Sig = case_when(
-        logFC > 0.5 & pvalue < 0.05 ~ "Up",
-        logFC < -0.5 & pvalue < 0.05 ~ "Down",
+        logFC > 0.5 & FDR < 0.05 ~ "Up",
+        logFC < -0.5 & FDR < 0.05 ~ "Down",
         TRUE ~ "NS"
       )
-    )%>%
-    filter(!is.na(logFC) & !is.na(pvalue))
+    ) %>%
+    filter(!is.na(logFC) & !is.na(pvalue) & !is.na(FDR))
   
   write.csv(result_df, paste0("TE_logFC_", safe_name, ".csv"), row.names = FALSE)
   n_genes_used <- nrow(result_df)
@@ -92,17 +93,17 @@ for (target_celltype in cell_types) {
   result_df <- result_df %>%
     mutate(
       logFC_capped = pmax(pmin(logFC, 4), -4),
-      negLogP_capped = pmin(negLogP, 50)
+      negLogFDR_capped = pmin(negLogFDR, 50)
     )
   
-  # Annotate top genes
+  # Annotate genes
   top_genes <- result_df %>%
-    filter(pvalue < 0.05) %>%
+    filter(FDR < 0.05) %>%
     arrange(desc(logFC)) %>%
     slice_head(n = 5) %>%
     bind_rows(
       result_df %>%
-        filter(pvalue < 0.05) %>%
+        filter(FDR < 0.05) %>%
         arrange(logFC) %>%
         slice_head(n = 5)
     )
@@ -112,7 +113,7 @@ for (target_celltype in cell_types) {
   n_down <- sum(result_df$Sig == "Down", na.rm = TRUE)
   
   # Generate volcano plot
-  p <- ggplot(result_df, aes(x = logFC_capped, y = negLogP_capped)) +
+  p <- ggplot(result_df, aes(x = logFC_capped, y = negLogFDR_capped)) +
     geom_point(aes(color = Sig), alpha = 0.7, size = 1.2) +
     scale_color_manual(values = c("Up" = "#B2182B", "Down" = "#2166AC", "NS" = "gray")) +
     geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed", color = "black") +
@@ -120,7 +121,7 @@ for (target_celltype in cell_types) {
     scale_x_continuous(limits = c(-4, 4)) +
     scale_y_continuous(limits = c(0, 55)) +
     geom_text_repel(data = top_genes,
-                    aes(x = logFC_capped, y = negLogP_capped, label = Gene),
+                    aes(x = logFC_capped, y = negLogFDR_capped, label = Gene),
                     size = 3, max.overlaps = 100) +
     annotate("text", x = 3.5, y = 55, label = paste0("Up: ", n_up), color = "#B2182B", size = 4, hjust = 1) +
     annotate("text", x = -3.5, y = 55, label = paste0("Down: ", n_down), color = "#2166AC", size = 4, hjust = 0) +
@@ -129,7 +130,7 @@ for (target_celltype in cell_types) {
       title = paste0("TE Volcano Plot: ", target_celltype,
                      "\n(", n_genes_used, " genes used, totalRNA≥1 in ≥5%)"),
       x = "log2 Fold Change (TE)",
-      y = "-log10(P-value)",
+      y = "-log10(Adjusted p-value)",
       color = "Significance"
     )
   
