@@ -6,7 +6,7 @@ library(matrixStats)
 library(ggplot2)
 
 rm(list = ls())
-setwd("/storage/lingyuan2/20250101rj/downstream/alldatafinalzarr")
+setwd("/storage/lingyuan2/STATES_data")
 use_python("/home/lingyuan2/mambaforge/envs/bigfish_env/bin/python", required = TRUE)
 py_config()
 sc_ad <- read_h5ad("cellcyclescore.h5ad")
@@ -71,7 +71,7 @@ rbRNA_weight <- totalRNA$rbRNA.weight
 print("Before updating metadata:")
 print(head(totalRNA@meta.data))
 
-metadata$sample <- factor(metadata$sample, levels = c("Control", "Tg15min", "Tg30min", "Tg1h", "Tg2h", "Tg4h"))
+metadata$sample <- factor(metadata$sample, levels = c("C3control", "B4Tg15min", "B5Tg30min", "B6Tg1h", "C4Tg2h", "C5Tg4h"))
 metadata$phase <- factor(metadata$phase, levels = c("G1", "S", "G2M"))
 
 totalRNA@meta.data <- metadata
@@ -81,7 +81,7 @@ totalRNA$rbRNA.weight <- rbRNA_weight
 print("After updating metadata:")
 print(head(totalRNA@meta.data))
 
-totalRNA$sample <- factor(totalRNA$sample, levels = c("Control", "Tg15min", "Tg30min", "Tg1h", "Tg2h", "Tg4h"))
+totalRNA$sample <- factor(totalRNA$sample, levels = c("C3control", "B4Tg15min", "B5Tg30min", "B6Tg1h", "C4Tg2h", "C5Tg4h"))
 
 print("Sample column after factor conversion:")
 print(table(totalRNA$sample))
@@ -89,7 +89,7 @@ print(table(totalRNA$sample))
 print("Checking weights after metadata update:")
 print(colnames(totalRNA@meta.data))
 
-output_dir <- "/storage/lingyuan2/20250101rj/downstream/alldatafinalzarr/06_pseudotime/wnnplot_20250425"
+output_dir <- "/storage/lingyuan2/STATES_data"
 
 if (!dir.exists(output_dir)) {
   dir.create(output_dir, recursive = TRUE)
@@ -107,12 +107,12 @@ add_phase_legend <- function(plot) {
 
 # Color schemes
 sample_colors <- c(
-  "Control" = "#FDE725FF",
-  "Tg15min" = "#7AD151FF",
-  "Tg30min" = "#22A884FF",
-  "Tg1h" = "#2A788EFF",
-  "Tg2h" = "#414487FF",
-  "Tg4h" = "#440154FF"
+  "C3control" = "#FDE725FF",
+  "B4Tg15min" = "#7AD151FF",
+  "B5Tg30min" = "#22A884FF",
+  "B6Tg1h" = "#2A788EFF",
+  "C4Tg2h" = "#414487FF",
+  "C5Tg4h" = "#440154FF"
 )
 
 phase_colors <- c(
@@ -268,10 +268,18 @@ plot_cells(cds, show_trajectory_graph = TRUE, color_cells_by = "pseudotime", cel
 ggsave("pseudotime_plot_size.pdf", plot = p2, width = 5.5, height = 5)
 
 # Reverse sample order for ridge plot if needed
-plot_data$sample <- factor(plot_data$sample, levels = rev(unique(plot_data$sample)))
-plot_data$sample <- factor(plot_data$sample, levels = rev(levels(plot_data$sample)))
+#plot_data$sample <- factor(plot_data$sample, levels = rev(unique(plot_data$sample)))
+#plot_data$sample <- factor(plot_data$sample, levels = rev(levels(plot_data$sample)))
 
+pseudotime_values <- pseudotime(cds)
+pseudotime_data <- data.frame(
+  Cell = names(pseudotime_values),
+  Pseudotime = pseudotime_values
+  )
+write.csv(pseudotime_data, file = file.path(output_dir, "pseudotime_values.csv"), row.names = FALSE)
 library(ggridges)
+plot_data <- as.data.frame(cds@colData)
+plot_data["pseudotime"] = cds@principal_graph_aux@listData$UMAP$pseudotime
 
 p <- ggplot(plot_data, aes(x = pseudotime, y = sample, color = sample, fill = sample)) +
   geom_density_ridges(alpha = 0.6, size = 0.6) +
@@ -289,19 +297,7 @@ p <- ggplot(plot_data, aes(x = pseudotime, y = sample, color = sample, fill = sa
   scale_color_manual(values = sample_colors) +
   scale_fill_manual(values = sample_colors) +
   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
-  ggrepel::geom_text_repel(
-    data = plot_data %>% 
-      group_by(sample) %>% 
-      summarise(min_pseudotime = min(pseudotime)) %>% 
-      distinct(sample, min_pseudotime),
-    aes(x = min_pseudotime, y = sample, label = sample),
-    size = 4, 
-    hjust = 1, 
-    color = "black",
-    direction = "y",
-    nudge_x = -0.1,
-    segment.size = 0.2
-  )
+  scale_y_discrete(limits = rev(levels(plot_data$sample)))
 
 print(p)
-ggsave(filename = file.path(output_dir, "pseudotime_distribution_ridge_plot.pdf"), p, width = 5.5, height = 6)
+ggsave(filename = file.path(output_dir, "pseudotime_distribution_ridge_plot.pdf"), p, width = 6, height = 6)

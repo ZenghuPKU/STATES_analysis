@@ -1,5 +1,5 @@
 rm(list=ls())
-setwd("/storage/lingyuan2/20250101rj/downstream/alldatafinalzarr")
+setwd("/storage/lingyuan2/STATES_data")
 
 library(Seurat)
 library(anndata)
@@ -7,8 +7,8 @@ library(reticulate)
 
 use_python("/home/lingyuan2/mambaforge/envs/bigfish_env/bin/python", required = TRUE)
 py_config()
-sc_ad <- read_h5ad("filtered_data.h5ad")
-
+sc_ad <- read_h5ad("cellline_filtered_data.h5ad")
+sc_ad$var
 metadata <- sc_ad$obs
 
 library(ggplot2)
