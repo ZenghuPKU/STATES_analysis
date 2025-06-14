@@ -22,7 +22,6 @@ totalRNA[["rbRNA"]] <- CreateAssayObject(counts = rbRNA_matrix)
 
 DefaultAssay(totalRNA) <- "RNA"
 
-# Normalize RNA counts (no log)
 totalRNA <- NormalizeData(totalRNA, assay = "RNA", normalization.method = "RC", scale.factor = 2203)
 norm_rna <- GetAssayData(totalRNA, slot = "data", assay = "RNA")
 te_matrix <- t(sc_ad$layers['TE'])
@@ -223,7 +222,7 @@ ls("package:monocle3")
 
 # Create Monocle3 object
 cds <- new_cell_data_set(
-  expression_data = GetAssayData(totalRNA, assay = "rbRNA", slot = "counts"),
+  expression_data = GetAssayData(totalRNA, assay = "RNA", slot = "counts"),
   cell_metadata = totalRNA@meta.data,
   gene_metadata = data.frame(gene_short_name = rownames(totalRNA), row.names = rownames(totalRNA))
 )
