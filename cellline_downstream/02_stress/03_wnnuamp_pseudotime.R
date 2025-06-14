@@ -229,6 +229,7 @@ cds <- new_cell_data_set(
 )
 # Use Seurat UMAP embedding
 reducedDims(cds)$UMAP <- Embeddings(totalRNA, reduction = "wnn.umap")
+set.seed(2025)
 cds <- cluster_cells(cds)
 cds <- learn_graph(cds)
 cds <- order_cells(cds)
@@ -265,7 +266,7 @@ plot_cells(cds, show_trajectory_graph = TRUE, color_cells_by = "pseudotime", cel
     aspect.ratio = 1 / 1
   ) +
   labs(color = "Pseudotime") -> p2
-ggsave("pseudotime_plot_size.pdf", plot = p2, width = 5.5, height = 5)
+ggsave("pseudotime_plot_size2.pdf", plot = p2, width = 5.5, height = 5)
 
 # Reverse sample order for ridge plot if needed
 #plot_data$sample <- factor(plot_data$sample, levels = rev(unique(plot_data$sample)))
@@ -276,7 +277,7 @@ pseudotime_data <- data.frame(
   Cell = names(pseudotime_values),
   Pseudotime = pseudotime_values
   )
-write.csv(pseudotime_data, file = file.path(output_dir, "pseudotime_values.csv"), row.names = FALSE)
+write.csv(pseudotime_data, file = file.path(output_dir, "pseudotime_values2.csv"), row.names = FALSE)
 library(ggridges)
 plot_data <- as.data.frame(cds@colData)
 plot_data["pseudotime"] = cds@principal_graph_aux@listData$UMAP$pseudotime
@@ -300,4 +301,4 @@ p <- ggplot(plot_data, aes(x = pseudotime, y = sample, color = sample, fill = sa
   scale_y_discrete(limits = rev(levels(plot_data$sample)))
 
 print(p)
-ggsave(filename = file.path(output_dir, "pseudotime_distribution_ridge_plot.pdf"), p, width = 6, height = 6)
+ggsave(filename = file.path(output_dir, "pseudotime_distribution_ridge_plot2.pdf"), p, width = 6, height = 6)

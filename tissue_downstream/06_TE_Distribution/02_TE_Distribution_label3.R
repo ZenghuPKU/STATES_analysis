@@ -4,11 +4,14 @@ library(Matrix)
 library(dplyr)
 library(Seurat)
 library(anndata)
+library(reticulate)
 library(ggplot2)
 library(ggridges)
 library(viridis)
 rm(list = ls())
 setwd("~/tissue_downstream/06_TE_Distribution/")
+use_condaenv("scanpy_env", required = TRUE)
+py_config()
 
 # Load the annotated object (states_celltypes_identification.RData), Read h5ad data
 load("states_celltypes_identification.RData")
@@ -49,7 +52,7 @@ celltype_colors <- c(
 )
 
 # Process expression matrices
-totalRNA_matrix <- t(sc_ad$layers['totalRNA'])
+totalRNA_matrix <- t(sc_ad$layers['totalRNA_raw'])
 rbRNA_matrix <- t(sc_ad$layers['rbRNA'])
 metadata <- sc_ad$obs
 totalRNA <- CreateSeuratObject(counts = totalRNA_matrix, meta.data = metadata)

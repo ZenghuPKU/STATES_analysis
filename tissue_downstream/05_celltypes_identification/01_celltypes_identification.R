@@ -11,6 +11,28 @@ rm(list = ls())
 # Load the Mixfind object (states_mixsfind.Rdata)
 load("states_mixsfind.Rdata")
 
+# Two approaches to obtain cell type annotations:
+# Method 1 loads existing annotation results from the "mousebrain_umap_embeddings_with_labels.csv" file.
+# Method 2 demonstrates the marker-based annotation strategy originally used to derive these annotations.
+
+# Method 1: Load cell type annotations from "mousebrain_umap_embeddings_with_labels.csv"
+umap_df <- read.csv("mousebrain_umap_embeddings_with_labels.csv", row.names = 1)
+common_cells <- intersect(rownames(umap_df), colnames(states))
+umap_df <- umap_df[common_cells, ]
+states <- subset(states, cells = common_cells)
+states@meta.data$states_nn_alg1_label1 <- umap_df$label1
+states@meta.data$states_nn_alg1_label2 <- umap_df$label2
+states@meta.data$states_nn_alg1_label3 <- umap_df$label3
+Idents(states) <- "states_nn_alg1_label3"
+table(states$states_nn_alg1_label1)
+table(states$states_nn_alg1_label2)
+table(states$states_nn_alg1_label3)
+DimPlot(states,reduction = "states.umap",label = T)+ NoLegend()
+
+# Output the cell types identification result
+save(states,file = "states_celltypes_identification.RData")
+
+# Method 2: Demonstrate the marker-based annotation strategy originally used to derive these annotations.
 # Find highly variable genes
 Idents(states) <- "states_nn_alg1_new"
 markers = FindAllMarkers(object = states, graph.name = "totalRNA_nn",test.use="wilcox" ,only.pos = TRUE,logfc.threshold = 0.1,min.pct = 0.25)   
@@ -19,11 +41,7 @@ top10 = all.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_log2FC)
 write.csv(all.markers, "diff_genes_wilcox_alg1_sub.csv", row.names = F)
 write.csv(top10, "top10_diff_genes_wilcox_alg1_sub.csv", row.names = F)
 
-# Draw dot plot showing the expression status of certain marker genes
-C=c("Pdgfra","Olig2")
-DotPlot(states,features = C)+RotatedAxis()
-
-# Initial Identification of neurons and non-neurons (label1)
+# Initial Identification of neurons and non-neurons
 new.cluster.ids <- c( "0" = "Neuron",
                       "1" = "Non_Neuron",
                       "2" = "Neuron",
@@ -54,7 +72,7 @@ Idents(states) <- "states_nn_alg1_label1"
 table(states@active.ident)
 DimPlot(states,reduction = "states.umap",label = T)+ NoLegend()
 
-# Initial identification of the main cell types
+# Initial identification of the major cell types
 Idents(states) <- "states_nn_alg1_new"
 new.cluster.ids <- c( "0" = "TEPN",
                       "1" = "AC",
@@ -92,7 +110,7 @@ DefaultAssay(states) <- "totalRNA"
 raw_counts <- GetAssayData(states, assay = "totalRNA", slot = "counts")
 total_counts <- Matrix::colSums(raw_counts)
 scale_factor <- median(total_counts)
-cat("中位数归一化因子：", scale_factor, "\n")
+cat("RC：", scale_factor, "\n")
 
 # AC Normalize
 AC_cells <- WhichCells(states, idents = "AC")
@@ -289,6 +307,26 @@ table(Idents(states))
 states$states_nn_alg1_label2_new<- states@active.ident
 DimPlot(states,reduction = "states.umap",label = T)+ NoLegend()
 
+# TEPN_0_0 Normalize
+TEPN_0_0_cells <- WhichCells(states, idents = "TEPN_0_0")
+seurat_sub <- subset(states, cells = TEPN_0_0_cells)
+seurat_sub <- NormalizeData(seurat_sub, assay = "totalRNA", normalization.method = "RC", scale.factor = scale_factor)
+seurat_sub <- FindVariableFeatures(seurat_sub, selection.method = "vst", nfeatures = 1500, assay = "totalRNA")
+seurat_sub <- ScaleData(seurat_sub)
+seurat_sub <- RunPCA(seurat_sub)
+ElbowPlot(seurat_sub, ndims = 50, reduction = "pca")
+seurat_sub <- FindNeighbors(seurat_sub, dims = 1:30)
+seurat_sub <- FindClusters(seurat_sub,resolution = 1)
+new_clusters <- Idents(seurat_sub)
+levels(new_clusters) <- paste0("TEPN_0_0_", seq(0, length(levels(new_clusters))-1))
+all_idents <- Idents(states)
+levels(all_idents) <- union(levels(all_idents), levels(new_clusters))
+all_idents[TEPN_0_0_cells] <- new_clusters
+Idents(states) <- all_idents
+table(Idents(states))
+states$states_nn_alg1_label3_new<- states@active.ident
+DimPlot(states,reduction = "states.umap",label = T)+ NoLegend()
+
 # Identification of neurons and non-neurons (label1)
 Idents(states) <- "states_nn_alg1_label2_new"
 new.cluster.ids <- c( "TEPN_0_0" = "Neuron",
@@ -420,14 +458,18 @@ table(states@active.ident)
 DimPlot(states,reduction = "states.umap",label = T)+ NoLegend()
 
 # Identification of subcelltypes (label3)
-Idents(states) <- "states_nn_alg1_label2_new"
-new.cluster.ids <- c( "TEPN_0_0" = "TEGLU L2/3/4",
-                      "TEPN_0_1" = "TEGLU L2/3/4",
+Idents(states) <- "states_nn_alg1_label3_new"
+table(states$states_nn_alg1_label2_new)
+new.cluster.ids <- c( "TEPN_0_0_0" = "TEGLU Mix",
+                      "TEPN_0_0_1" = "TEGLU Mix",
+                      "TEPN_0_0_2" = "TEGLU L4",
+                      "TEPN_0_0_3" = "TEGLU Mix",
+                      "TEPN_0_1" = "TEGLU L4",
                       "TEPN_0_2" = "TEGLU L5/6",
-                      "TEPN_0_3" = "TEGLU L2/3",
+                      "TEPN_0_3" = "TEGLU L4",
                       "TEPN_0_4" = "TEGLU Mix",
                       "TEPN_1_0" = "TEGLU Mix",
-                      "TEPN_1_1" = "TEGLU L2/3",
+                      "TEPN_1_1" = "TEGLU L4",
                       "TEPN_1_2" = "TEGLU L2/3",
                       "TEPN_1_3" = "TEGLU L2/3",
                       "TEPN_1_4" = "TEGLU L2/3",
@@ -470,11 +512,11 @@ new.cluster.ids <- c( "TEPN_0_0" = "TEGLU L2/3/4",
                       "CHOR/EPEN_1" = "EPEN",
                       "CHOR/EPEN_2" = "CHOR",
                       "CHOR/EPEN_3" = "CHOR",
-                      "OLG_0" = "OLG1",
-                      "OLG_1" = "OLG1",
-                      "OLG_2" = "OLG1",
-                      "OLG_3" = "OLG2",
-                      "OLG_4" = "OLG2"
+                      "OLG_0" = "OLG2",
+                      "OLG_1" = "OLG2",
+                      "OLG_2" = "OLG2",
+                      "OLG_3" = "OLG1",
+                      "OLG_4" = "OLG1"
 )
 states <- RenameIdents(states, new.cluster.ids)                        
 states$states_nn_alg1_label3<- states@active.ident

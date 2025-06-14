@@ -8,6 +8,8 @@ library(matrixStats)
 library(ggplot2)
 rm(list = ls())
 setwd("~/tissue_downstream/05_celltypes_identification/")
+use_condaenv("scanpy_env", required = TRUE)
+py_config()
 
 # Load the annotated object (states_celltypes_identification.RData), Read h5ad data
 load("states_celltypes_identification.RData")
@@ -98,8 +100,6 @@ ggsave("spatial_STATESC1_label3.pdf", p_spatial, width = 8, height = 7, device =
 # Select specific cell types for visualization.
 # Define color mapping by assigning colors to all cell types using a hue palette.
 levels_labels <- levels(plot_data$states_nn_alg1_label3)
-default_palette <- scales::hue_pal()(length(levels_labels))
-names(default_palette) <- levels_labels
 
 # Initialize all cell type colors to gray.
 default_palette <- setNames(rep("lightgrey", length(levels_labels)), levels_labels)

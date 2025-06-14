@@ -24,7 +24,7 @@ umap_df <- data.frame(
 )
 
 # Save as CSV file
-write.csv(umap_df, file = "states_umap_with_labels.csv", row.names = FALSE)
+write.csv(umap_df, file = "mousebrain_umap_embeddings_with_labels.csv", row.names = FALSE)
 
 # label1 UMAP visualization
 Idents(states) <- "states_nn_alg1_label1"
@@ -63,7 +63,7 @@ P2=DimPlot(states, reduction = "states.umap", label = T, group.by = "states_nn_a
   NoLegend() +
   ggtitle(NULL)
 P2
-ggsave("states_Umap_label2.pdf", P1, width = 8, height = 8, device = cairo_pdf)
+ggsave("states_Umap_label2.pdf", P2, width = 8, height = 8, device = cairo_pdf)
 
 # label3 UMAP visualization
 Idents(states) <- "states_nn_alg1_label3"
@@ -105,6 +105,6 @@ P3=DimPlot(states, reduction = "states.umap", label = T, group.by = "states_nn_a
   NoLegend() +
   ggtitle(NULL)
 P3
-ggsave("states_Umap_label3.pdf", P1, width = 8, height = 8, device = cairo_pdf)
+ggsave("states_Umap_label3.pdf", P3, width = 8, height = 8, device = cairo_pdf)
 
 

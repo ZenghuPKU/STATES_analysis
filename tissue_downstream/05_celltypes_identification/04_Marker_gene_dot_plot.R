@@ -5,6 +5,7 @@ library(tidyverse)
 library(patchwork)
 library(cowplot)
 library(viridis)
+library(Matrix)
 rm(list = ls())
 setwd("~/tissue_downstream/05_celltypes_identification/")
 
@@ -90,8 +91,11 @@ ggsave("label2_rbRNA.pdf", P_l2_rbRNA, width = 10, height = 15)
 # Calculate TE matrix (label2 and label3)
 # Extract expression matrix
 library(anndata)
+library(reticulate)
+use_condaenv("scanpy_env", required = TRUE)
+py_config()
 sc_ad <- read_h5ad("mousebrain_harmony.h5ad")
-totalRNA_matrix <- t(sc_ad$layers[["totalRNA"]])
+totalRNA_matrix <- t(sc_ad$layers[["totalRNA_raw"]])
 rbRNA_matrix <- t(sc_ad$layers[["rbRNA"]])
 meta <- sc_ad$obs
 

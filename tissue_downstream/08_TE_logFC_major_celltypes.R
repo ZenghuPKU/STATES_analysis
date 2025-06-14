@@ -6,15 +6,18 @@ library(ggplot2)
 library(ggrepel)
 library(readr)
 library(anndata)
+library(reticulate)
 rm(list = ls())
 setwd("~/tissue_downstream/")
+use_condaenv("scanpy_env", required = TRUE)
+py_config()
 
 # Load the annotated object and h5ad data
 load("states_celltypes_identification.RData")
 sc_ad <- read_h5ad("mousebrain_harmony.h5ad")
 
 # Prepare expression matrix
-totalRNA_matrix <- t(sc_ad$layers[["totalRNA"]])
+totalRNA_matrix <- t(sc_ad$layers[["totalRNA_raw"]])
 rbRNA_matrix <- t(sc_ad$layers[["rbRNA"]])
 metadata <- sc_ad$obs
 selected_genes <- rownames(sc_ad$var)[sc_ad$var$highly_variable == TRUE]

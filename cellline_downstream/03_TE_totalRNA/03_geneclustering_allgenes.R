@@ -8,17 +8,13 @@ library(circlize)
 
 use_python("/home/lingyuan2/mambaforge/envs/bigfish_env/bin/python", required = TRUE)
 py_config()
-sc_ad <- read_h5ad("filtered_data.h5ad")
+sc_ad <- read_h5ad("/storage/lingyuan2/STATES_data/filtered_data.h5ad")
 
 totalRNA_matrix <- t(sc_ad$X)
 rbRNA_matrix <- t(sc_ad$layers['rbRNA'])
 metadata <- sc_ad$obs
 
-up_genes <- read.csv("early_upregulated_genes.csv", header = FALSE)
-
-selected_genes_df <- rbind(up_genes)
-colnames(selected_genes_df) <- c("gene")
-selected_genes <- selected_genes_df$gene
+selected_genes <- rownames(totalRNA_matrix)
 
 totalRNA_matrix <- totalRNA_matrix[selected_genes, , drop = FALSE]
 rbRNA_matrix <- rbRNA_matrix[selected_genes, , drop = FALSE]
@@ -79,7 +75,7 @@ col_fun <- colorRamp2(
   c("#2166AC", "#F7F7F7", "#B2182B")
 )
 
-pdf("clustered_heatmaps_consistent_162gene_order.pdf", width = 15, height = 15)
+pdf("clustered_heatmaps_consistent_allgenes_order.pdf", width = 15, height = 15)
 
 ht_totalRNA <- Heatmap(
   matrix = ordered_totalRNA,

@@ -4,6 +4,7 @@ library(Matrix)
 library(dplyr)
 library(Seurat)
 library(anndata)
+library(reticulate)
 library(matrixStats)
 library(ggplot2)
 library(tidyverse)
@@ -13,13 +14,15 @@ library(clusterProfiler)
 library(org.Mm.eg.db)
 rm(list = ls())
 setwd("~/tissue_downstream/")
+use_condaenv("scanpy_env", required = TRUE)
+py_config()
 
 # Load the annotated object (states_celltypes_identification.RData), Read h5ad data
 load("states_celltypes_identification.RData")
 sc_ad <- read_h5ad("mousebrain_harmony.h5ad")
 
 # Load expression matrix
-totalRNA_matrix <- t(sc_ad$layers['totalRNA'])
+totalRNA_matrix <- t(sc_ad$layers['totalRNA_raw'])
 rbRNA_matrix <- t(sc_ad$layers['rbRNA'])
 metadata <- sc_ad$obs
 
