@@ -1,10 +1,10 @@
 rm(list=ls())
-setwd('/media/zenglab/result/lingyuan/mousebraindownstream/soma_process')
+setwd('/storage/lingyuan2/STATES_data')
 fcdfraw <- read.csv("eachgenefinal_all0503.csv")
 fcdf <- fcdfraw[fcdfraw$adj_pvalue < 0.05,]
 fcdf_top <- fcdf[fcdf$log2fc < -1,]
 
-write.csv(fcdf_top, "fcdf_1.csv", row.names = FALSE)
+#write.csv(fcdf_top, "fcdf_1.csv", row.names = FALSE)
 
 ###########GO
 
@@ -126,14 +126,12 @@ library(ggrepel)
 fcdfraw$Group <- "Other"
 fcdfraw$Group[fcdfraw$gene %in% fcdf_top$gene] <- "Somata-biased"
 
-genes_to_label <- c("olfm1", "kcna6", "cnr1", "mrpl43", "smoc1", "spink8", "tcf20")
-label_genes <- fcdfraw %>% filter(tolower(gene) %in% genes_to_label)
-
-library(ggplot2)
-library(ggrepel)
 
 fcdfraw$plot_y <- -log10(fcdfraw$adj_pvalue)
 fcdfraw$plot_y[fcdfraw$plot_y > 200] <- 205
+
+genes_to_label <- c("olfm1", "kcna6", "cnr1", "mrpl43", "smoc1", "spink8", "tcf20")
+label_genes <- fcdfraw %>% filter(tolower(gene) %in% genes_to_label)
 
 ymax <- max(fcdfraw$plot_y, na.rm = TRUE)
 
@@ -161,7 +159,7 @@ p <- ggplot(fcdfraw, aes(x = log2fc, y = plot_y, color = Group)) +
       "Somata-biased" = "#B2182B",
       "Other" = "gray"
     ),
-    breaks = c("Somata-biased top 10%", "Other")
+    breaks = c("Somata-biased", "Other")
   ) +
   labs(
     x = "log2(ProcessesTE / SomataTE)",
@@ -182,7 +180,7 @@ ggsave("volcano_plot_all_label.pdf", p, width = 4, height = 4, device = "pdf")
 
 
 ###########violin plot
-gene_summary <- read.csv('soma_process_eachgene_all_0503.csv')
+gene_summary <- read.csv('/storage/lingyuan2/STATES_data/soma_process_eachgene_all_0503.csv')
 
 row.names(gene_summary) <- gene_summary$gene
 gene_summary$gene <- NULL

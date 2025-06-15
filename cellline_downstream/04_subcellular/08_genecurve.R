@@ -1,6 +1,7 @@
 rm(list = ls())
 library(tidyverse)
 library(ggplot2)
+setwd('/storage/lingyuan2/STATES_data')
 
 df <- read.csv("te_by_dr_bin_gene_control1021_3bin.csv")
 result <- df %>%

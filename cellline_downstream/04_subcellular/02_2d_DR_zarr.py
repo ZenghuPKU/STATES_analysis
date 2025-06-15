@@ -99,38 +99,38 @@ def add_DR_2d(
     print("Done! The new Zarr file now contains point information with DR column and out-of-bounds flag.")
 
 add_DR_2d(
-    original_zarr_path="cellline0101_C3control_2d.zarr",
-    new_zarr_path="cellline0101_C3control_2d_dr.zarr",
+    original_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_C3control_2d.zarr",
+    new_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_C3control_2d_dr.zarr",
     table_key="table",
     sampling=(1,1)
 )
 add_DR_2d(
-    original_zarr_path="cellline0101_B4Tg15min_2d.zarr",
-    new_zarr_path="cellline0101_B4Tg15min_2d_dr.zarr",
+    original_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_B4Tg15min_2d.zarr",
+    new_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_B4Tg15min_2d_dr.zarr",
     table_key="table",
     sampling=(1,1)
 )
 add_DR_2d(
-    original_zarr_path="cellline0101_B5Tg30min_2d.zarr",
-    new_zarr_path="cellline0101_B5Tg30min_2d_dr.zarr",
+    original_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_B5Tg30min_2d.zarr",
+    new_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_B5Tg30min_2d_dr.zarr",
     table_key="table",
     sampling=(1,1)
 )
 add_DR_2d(
-    original_zarr_path="cellline0101_B6Tg1h_2d.zarr",
-    new_zarr_path="cellline0101_B6Tg1h_2d_dr.zarr",
+    original_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_B6Tg1h_2d.zarr",
+    new_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_B6Tg1h_2d_dr.zarr",
     table_key="table",
     sampling=(1,1)
 )
 add_DR_2d(
-    original_zarr_path="cellline0101_C4Tg2h_2d.zarr",
-    new_zarr_path="cellline0101_C4Tg2h_2d_dr.zarr",
+    original_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_C4Tg2h_2d.zarr",
+    new_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_C4Tg2h_2d_dr.zarr",
     table_key="table",
     sampling=(1,1)
 )
 add_DR_2d(
-    original_zarr_path="cellline0101_C5Tg4h_2d.zarr",
-    new_zarr_path="cellline0101_C5Tg4h_2d_dr.zarr",
+    original_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_C5Tg4h_2d.zarr",
+    new_zarr_path="/storage/lingyuan2/STATES_data/cellline0101_C5Tg4h_2d_dr.zarr",
     table_key="table",
     sampling=(1,1)
 )

@@ -10,17 +10,17 @@ from tqdm import tqdm
 
 def main():
     # Load data
-    adata = sc.read_h5ad('mousebrain_0503.h5ad')
+    adata = sc.read_h5ad('/storage/lingyuan2/STATES_data/mousebrain_harmony_20250614.h5ad')
     adata = adata[:, adata.var['detected'] == True]
 
     # Read processes TE data and create a dictionary
     print("Loading processes TE data...")
-    df = pd.read_csv('soma_process_eachgene_all_0503.csv')
+    df = pd.read_csv('/storage/lingyuan2/STATES_data/soma_process_eachgene_all_0503.csv')
     processes_te_dict = df.set_index('gene')['processes_TE'].to_dict()
 
     # Prepare for parallel processing
     print("Preparing data for parallel processing...")
-    raw_values = adata.layers['raw'].toarray() if not isinstance(adata.layers['raw'], np.ndarray) else adata.layers['raw']
+    raw_values = adata.layers['totalRNA_raw'].toarray() if not isinstance(adata.layers['totalRNA_raw'], np.ndarray) else adata.layers['totalRNA_raw']
     te_values = adata.layers['TE'].toarray() if not isinstance(adata.layers['TE'], np.ndarray) else adata.layers['TE']
     
     # Find common genes and build index mapping
@@ -68,7 +68,7 @@ def main():
 
     # Save results
     print("Saving results...")
-    results_df.to_csv('gene_TE_comparison_results_with_FDR_all0503.csv', index=False)
+    results_df.to_csv('/storage/lingyuan2/STATES_data/gene_TE_comparison_results_with_FDR_all0503.csv', index=False)
     
     # Print top significant results
     print("\nTop significant results:")

@@ -37,26 +37,26 @@ def process_2d_assignment(
     return sdata
 
 if __name__ == "__main__":
-    input_path = "cellline0101_C3control.zarr"
-    output_path = "cellline0101_C3control_2d.zarr"
+    input_path = "/storage/lingyuan2/STATES_data/cellline0101_C3control"
+    output_path = "/storage/lingyuan2/STATES_data/cellline0101_C3control_2d.zarr"
     process_2d_assignment(input_path, output_path)
 
-    input_path = "cellline0101_B4Tg15min.zarr"
-    output_path = "cellline0101_B4Tg15min_2d.zarr"
+    input_path = "/storage/lingyuan2/STATES_data/cellline0101_B4Tg15min"
+    output_path = "/storage/lingyuan2/STATES_data/cellline0101_B4Tg15min_2d.zarr"
     process_2d_assignment(input_path, output_path)
 
-    input_path = "cellline0101_B5Tg30min.zarr"
-    output_path = "cellline0101_B5Tg30min_2d.zarr"
+    input_path = "/storage/lingyuan2/STATES_data/cellline0101_B5Tg30min"
+    output_path = "/storage/lingyuan2/STATES_data/cellline0101_B5Tg30min_2d.zarr"
     process_2d_assignment(input_path, output_path)
 
-    input_path = "cellline0101_B6Tg1h.zarr"
-    output_path = "cellline0101_B6Tg1h_2d.zarr"
+    input_path = "/storage/lingyuan2/STATES_data/cellline0101_B6Tg1h"
+    output_path = "/storage/lingyuan2/STATES_data/cellline0101_B6Tg1h_2d.zarr"
     process_2d_assignment(input_path, output_path)
 
-    input_path = "cellline0101_C4Tg2h.zarr"
-    output_path = "cellline0101_C4Tg2h_2d.zarr"
+    input_path = "/storage/lingyuan2/STATES_data/cellline0101_C4Tg2h"
+    output_path = "/storage/lingyuan2/STATES_data/cellline0101_C4Tg2h_2d.zarr"
     process_2d_assignment(input_path, output_path)
 
-    input_path = "cellline0101_C5Tg4h.zarr"
-    output_path = "cellline0101_C5Tg4h_2d.zarr"
+    input_path = "/storage/lingyuan2/STATES_data/cellline0101_C5Tg4h"
+    output_path = "/storage/lingyuan2/STATES_data/cellline0101_C5Tg4h_2d.zarr"
     process_2d_assignment(input_path, output_path)

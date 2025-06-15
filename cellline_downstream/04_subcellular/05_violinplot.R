@@ -3,7 +3,7 @@ rm(list=ls())
 library(ggplot2)
 library(ggpubr)
 
-te_by_dr_bin <- read.csv("te_by_dr_bin_cell_1021genes.csv")
+te_by_dr_bin <- read.csv("/storage/lingyuan2/STATES_data/te_by_dr_bin_cell.csv")
 
 suffixes <- c('-0', '-1', '-2', '-3', '-4', '-5')
 titles <- c('Control', 'Tg15min', 'Tg30min', 'Tg1h', 'Tg2h', 'Tg4h')

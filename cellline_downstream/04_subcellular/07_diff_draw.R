@@ -1,5 +1,5 @@
 rm(list = ls())
-setwd('/storage/lingyuan2/20250101rj/downstream/alldatafinalzarr/07_subcellular/2d')
+setwd('/storage/lingyuan2/STATES_data')
 library(dplyr)
 df = read.csv('te_by_dr_bin_gene_control1021_3bin.csv')
 
