@@ -8,7 +8,7 @@ fcdf_top <- fcdf[fcdf$log2fc < -1,]
 
 ###########GO
 
-background_genes <- read.csv("2323detected_genes.csv")
+background_genes <- read.csv("/storage/lingyuan2/STATES_data/2323detected_genes.csv")
 background_genes <- unique(background_genes$Gene)
 
 library(clusterProfiler)

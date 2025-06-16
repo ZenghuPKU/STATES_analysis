@@ -35,7 +35,11 @@ library(ggrepel)
 high_te_genes <- te_diff_df[te_diff_df$TE_diff >= 0.1, "gene", drop = FALSE]
 low_te_genes <- te_diff_df[te_diff_df$TE_diff < -0.1, "gene", drop = FALSE]
 middle_te_genes <- te_diff_df[te_diff_df$TE_diff > -0.1 & te_diff_df$TE_diff < 0.1, "gene", drop = FALSE]
-
+write.csv(
+  low_te_genes,
+  file = "/storage/lingyuan2/STATES_data/3bin_lower_genes0_1.csv",
+  row.names = FALSE
+)
 p <- ggplot(te_diff_df, aes(x = gene_order, y = TE_diff)) +
   geom_point(aes(color = ifelse(TE_diff >= 0.1, "high", ifelse(TE_diff < -0.1, "low", "middle"))), alpha = 0.8) +
   scale_color_manual(values = c("low" = "red", "middle" = "gray", "high" = "blue")) +
