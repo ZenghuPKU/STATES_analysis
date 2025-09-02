@@ -1,5 +1,4 @@
 # 10_TE_totalRNA_correlation
-# Load libraries and set environment
 library(Matrix)
 library(dplyr)
 library(Seurat)
@@ -21,8 +20,8 @@ load("states_celltypes_identification.RData")
 ad <- read_h5ad("mousebrain_harmony.h5ad")
 
 # Extract raw count matrices (gene × cell)
-totalRNA_raw_mat <- t(ad$layers['totalRNA_raw'])       
-rbRNA_raw_mat    <- t(ad$layers['rbRNA'])   
+totalRNA_raw_mat <- t(ad$layers['totalRNA_raw'])
+rbRNA_raw_mat    <- t(ad$layers['rbRNA'])
 meta_ad          <- ad$obs
 
 # Convert into Seurat objects for consistency
@@ -121,11 +120,11 @@ build_long_norel <- function(label_col, genes_keep = NULL,
   L
 }
 
-# All target genes correlation across cell types
+# Detected genes correlation across cell types
 per_gene_corr_linear <- function(L) {
   if (!nrow(L)) {
     return(data.frame(Gene = character(0), N_Celltypes = integer(0),
-                      Pearson_r = numeric(0), Pvalue = numeric(0), stringsAsFactors = FALSE))
+                      Pearson_r = numeric(0), stringsAsFactors = FALSE))
   }
   genes <- unique(L$Gene)
   res <- lapply(genes, function(g) {
@@ -134,13 +133,8 @@ per_gene_corr_linear <- function(L) {
     y <- df$TE_raw
     ok <- is.finite(x) & is.finite(y)
     n_ok <- sum(ok)
-    if (n_ok >= 3) {
-      ct <- tryCatch(suppressWarnings(cor.test(x[ok], y[ok], method = "pearson")),
-                     error = function(e) NULL)
-      r <- if (is.null(ct)) NA_real_ else as.numeric(unname(ct$estimate))
-      p <- if (is.null(ct)) NA_real_ else as.numeric(ct$p.value)
-    } else { r <- NA_real_; p <- NA_real_ }
-    data.frame(Gene = g, N_Celltypes = n_ok, Pearson_r = r, Pvalue = p, stringsAsFactors = FALSE)
+    r <- if (n_ok >= 3) suppressWarnings(suppressMessages(cor(x[ok], y[ok], method = "pearson"))) else NA_real_
+    data.frame(Gene = g, Pearson_r = r, stringsAsFactors = FALSE)
   })
   do.call(rbind, res)
 }
@@ -153,14 +147,13 @@ plot_marker_scatter_linear <- function(L, label_tag, order_vec, color_vec,
   L$CellType <- factor(L$CellType, levels = intersect(order_vec, unique(L$CellType)))
   colors_use <- color_vec[levels(L$CellType)]
   
-  pdf_file <- file.path(out_dir, paste0(label_tag, "_MARKERS_scatter_totalNorm_vs_TE_BY_GENE.pdf"))
+  pdf_file <- file.path(out_dir, paste0(label_tag, "_MARKERS_scatter_totalRNA_vs_TE_BY_GENE.pdf"))
   pdf(pdf_file, width = 6.8, height = 6.2)
   for (g in unique(L$Gene)) {
     df <- L %>% dplyr::filter(Gene == g) %>% dplyr::filter(is.finite(mean_norm_totalRNA), is.finite(TE_raw))
-    r_val <- NA_real_; p_val <- NA_real_
+    r_val <- NA_real_
     if (nrow(df) >= min_ct_points) {
-      ct <- suppressWarnings(cor.test(df$mean_norm_totalRNA, df$TE_raw, method = "pearson"))
-      r_val <- unname(ct$estimate); p_val <- ct$p.value
+      r_val <- suppressWarnings(cor(df$mean_norm_totalRNA, df$TE_raw, method = "pearson"))
     }
     p <- ggplot(df, aes(x = mean_norm_totalRNA, y = TE_raw, color = CellType, label = CellType)) +
       geom_point(size = point_size, alpha = 0.9) +
@@ -170,7 +163,6 @@ plot_marker_scatter_linear <- function(L, label_tag, order_vec, color_vec,
       labs(
         title = paste0(label_tag, " | ", g, "  (per gene across cell types)"),
         subtitle = paste0("Pearson r = ", ifelse(is.finite(r_val), sprintf('%.3f', r_val), "NA"),
-                          if (is.finite(p_val)) paste0(" | p = ", signif(p_val, 3)) else "",
                           " | n CT = ", nrow(df)),
         x = "totalRNA",
         y = "TE"
@@ -182,7 +174,7 @@ plot_marker_scatter_linear <- function(L, label_tag, order_vec, color_vec,
   message("Saved marker scatters: ", pdf_file)
 }
 
-# Distributions of correlation coefficients
+# Distributions of correlation coefficients (marker set)
 plot_marker_r_density <- function(per_gene_df, label_tag, markers_vec, fill = "#3182BD") {
   out_dir <- file.path(paste0("out_", label_tag)); if (!dir.exists(out_dir)) dir.create(out_dir, FALSE)
   df <- per_gene_df %>% dplyr::filter(is.finite(Pearson_r), Gene %in% markers_vec)
@@ -207,6 +199,7 @@ plot_marker_r_density <- function(per_gene_df, label_tag, markers_vec, fill = "#
          plot = p, width = 6.8, height = 4.8, dpi = 300)
 }
 
+# Distributions of correlation coefficients (detected genes)
 plot_allgenes_r_density <- function(per_gene_df, label_tag, fill = "#2166AC", add_rug = FALSE, rug_max_n = 1000) {
   out_dir <- file.path(paste0("out_", label_tag)); if (!dir.exists(out_dir)) dir.create(out_dir, FALSE)
   df <- per_gene_df[is.finite(per_gene_df$Pearson_r), , drop = FALSE]
@@ -215,13 +208,13 @@ plot_allgenes_r_density <- function(per_gene_df, label_tag, fill = "#2166AC", ad
   median_r <- median(df$Pearson_r)
   q25      <- as.numeric(quantile(df$Pearson_r, 0.25, names = FALSE))
   q75      <- as.numeric(quantile(df$Pearson_r, 0.75, names = FALSE))
-  readr::write_csv(df, file.path(out_dir, paste0(label_tag, "_ALLGENES_per_gene_correlation.csv")))
+  readr::write_csv(df, file.path(out_dir, paste0(label_tag, "_DETECTEDGENES_per_gene_correlation.csv")))
   p <- ggplot(df, aes(x = Pearson_r)) +
     geom_density(fill = fill, alpha = 0.30, color = fill, linewidth = 1) +
     geom_vline(xintercept = 0, linetype = "dashed") +
     geom_vline(xintercept = median_r, linetype = "solid") +
     labs(
-      title = paste0(label_tag, " | All target genes r density"),
+      title = paste0(label_tag, " | Detected genes r density"),
       subtitle = paste0("n = ", n, "  |  median r = ", sprintf('%.3f', median_r),
                         "  |  IQR [", sprintf('%.3f', q25), ", ", sprintf('%.3f', q75), "]"),
       x = "Pearson r",
@@ -233,9 +226,9 @@ plot_allgenes_r_density <- function(per_gene_df, label_tag, fill = "#2166AC", ad
     p <- p + geom_rug(data = df[idx, , drop = FALSE], aes(x = Pearson_r), sides = "b",
                       color = fill, alpha = 0.5, size = 0.4)
   }
-  ggsave(filename = file.path(out_dir, paste0(label_tag, "_ALLGENES_r_density.pdf")),
+  ggsave(filename = file.path(out_dir, paste0(label_tag, "_DETECTEDGENES_r_density.pdf")),
          plot = p, width = 6.8, height = 4.8, dpi = 300)
-  ggsave(filename = file.path(out_dir, paste0(label_tag, "_ALLGENES_r_density.png")),
+  ggsave(filename = file.path(out_dir, paste0(label_tag, "_DETECTEDGENES_r_density.png")),
          plot = p, width = 6.8, height = 4.8, dpi = 300)
 }
 
@@ -258,7 +251,7 @@ run_norel_pipeline <- function(label_col, label_tag, order_vec, color_vec, marke
   invisible(list(L_all = L_all, per_gene_all = per_gene_all))
 }
 
-# Execution of analyses
+# Execution
 run_norel_pipeline("states_nn_alg1_label2", "label2", order_l2, label2celltype_colors, markers_l2)
 run_norel_pipeline("states_nn_alg1_label3", "label3", order_l3, label3celltype_colors, markers_l3)
 
