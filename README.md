@@ -15,8 +15,8 @@ All environment files are stored in the [`requirements`](./requirements) folder.
   conda env create -f requirements/STATES_analysis_PYenv.yml
   conda activate STATES_analysis
   ```
-- **R**:
-  STATES_cellline_sessionInfo.txt — cell line downstream analysis
+- **R**:  
+  STATES_cellline_sessionInfo.txt — cell line downstream analysis  
   STATES_tissue_sessionInfo.txt — tissue downstream analysis  
   Typical package installation time: ~20–40 min (longer if Bioconductor dependencies are compiled).
 
