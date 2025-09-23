@@ -16,8 +16,8 @@ All environment files are stored in the [`requirements`](./requirements) folder.
   conda activate STATES_analysis
   ```
 - **R**:
-  - STATES_cellline_sessionInfo.txt — cell line downstream analysis
-  - STATES_tissue_sessionInfo.txt — tissue downstream analysis  
+  STATES_cellline_sessionInfo.txt — cell line downstream analysis
+  STATES_tissue_sessionInfo.txt — tissue downstream analysis  
   Typical package installation time: ~20–40 min (longer if Bioconductor dependencies are compiled).
 
 Most computations were performed on a local server (Intel Xeon Platinum 8368 CPU, 152 cores, 251 GiB RAM) and on the High-Performance Computing Platform of the Center for Life Sciences (Peking University).
