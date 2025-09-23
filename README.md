@@ -7,16 +7,20 @@ This project consists of analyses in STATES (Spatially-resolved transcriptomics 
 
 All environment files are stored in the [`requirements`](./requirements) folder.
 
-- **Python**: `STATES_analysis_PYenv.yml`  
+- **MATLAB**: R2023b was used for upstream image processing (no additional installation required beyond MATLAB itself).
 
+- **Python**: `STATES_analysis_PYenv.yml`  
+  Typical installation time: ~20–40 min (depends on network and hardware). 
   ```bash
   conda env create -f requirements/STATES_analysis_PYenv.yml
   conda activate STATES_analysis
   ```
-
 - **R**:
   - STATES_cellline_sessionInfo.txt — cell line downstream analysis
   - STATES_tissue_sessionInfo.txt — tissue downstream analysis
+  Typical package installation time: ~20–40 min (longer if Bioconductor dependencies are compiled).
+
+Most computations were performed on a local server (Intel Xeon Platinum 8368 CPU, 152 cores, 251 GiB RAM) and on the High-Performance Computing Platform of the Center for Life Sciences (Peking University).
 
 ## **🔬** Cellline Analysis
 
@@ -74,7 +78,7 @@ The folder contains following files and folders:
 
 - `genes.csv`: The gene barcode file used for decoding.
 - `round001/` to `round011/`: Contain the image data for eleven imaging rounds.
-- Each `round` folder includes images for multiple channels, with a resolution of 3072x3072x42 pixels.
+- Each `round` folder includes images for multiple channels.
 
 > Note: The demo scripts rely on additional MATLAB scripts located outside this folder:  
 > - `tissue_upstream/core_matlab.m`  
@@ -82,7 +86,11 @@ The folder contains following files and folders:
 
 ### Slurm Submission System Example
 
-This example demonstrates the data decoding process using a Slurm system.
+This demo was benchmarked on a high-memory HPC node:
+- Resources: 4 CPU cores, ~168 GB RAM
+- Runtime: ~15 minutes for 11 imaging rounds (3072 × 3072 × 42 pixels each)
+
+On a normal desktop computer, memory may not be sufficient to process the full dataset directly. In such cases, we recommend block-wise processing or downsampling of the image stacks, which will increase the runtime accordingly.
 
 **Global Registration**: Use the `global.srp` file to globally align the ten imaging rounds.
 
