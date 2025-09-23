@@ -102,7 +102,7 @@ On a normal desktop computer, memory may not be sufficient to process the full d
   # calls scripts in the local_position_subtile_tasks directory
   sbatch dynamics_submit.sh
   ```
-**Stitching**
+**Stitching**:
   ```bash  
   # stitch the local decoding results into a single, complete file 
   sbatch stitch.sh
