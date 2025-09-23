@@ -92,11 +92,21 @@ This demo was benchmarked on a high-memory HPC node:
 
 On a normal desktop computer, memory may not be sufficient to process the full dataset directly. In such cases, we recommend block-wise processing or downsampling of the image stacks, which will increase the runtime accordingly.
 
-**Global Registration**: Use the `global.srp` file to globally align the ten imaging rounds.
-
-**Local Registration, Spotfinding & Decoding**: Run the `dynamics_submit.sh` script, which calls scripts in the `local_position_subtile_tasks` directory to perform local registration, detect molecular spots, and decode the data.
-
-**Stitching**: Use the `stitch.sh` script to stitch the local decoding results into a single, complete file.
+**Global Registration**:
+  ```bash
+  # globally align multi-rounds
+  sbatch global.srp
+  ```
+**Local Registration, Spotfinding & Decoding**: 
+  ```bash
+  # calls scripts in the local_position_subtile_tasks directory
+  sbatch dynamics_submit.sh
+  ```
+**Stitching**
+  ```bash  
+  # stitch the local decoding results into a single, complete file 
+  sbatch stitch.sh
+  ```
 
 ### Output File
 
