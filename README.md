@@ -76,6 +76,10 @@ The folder contains following files and folders:
 - `round001/` to `round011/`: Contain the image data for eleven imaging rounds.
 - Each `round` folder includes images for multiple channels, with a resolution of 3072x3072x42 pixels.
 
+> Note: The demo scripts rely on additional MATLAB scripts located outside this folder:  
+> - `tissue_upstream/core_matlab.m`  
+> - `tissue_upstream/STATES-matlab-tissue/`
+
 ### Slurm Submission System Example
 
 This example demonstrates the data decoding process using a Slurm system.
