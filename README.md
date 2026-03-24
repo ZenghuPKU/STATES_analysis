@@ -17,7 +17,8 @@ All environment files are stored in the [`requirements`](./requirements) folder.
   ```
 - **R**:  
   STATES_cellline_sessionInfo.txt — cell line downstream analysis  
-  STATES_tissue_sessionInfo.txt — tissue downstream analysis  
+  STATES_tissue_sessionInfo.txt — tissue downstream analysis
+  STATES_AD_sessionInfo.txt - AD downstream analysis  
   Typical package installation time: ~20–40 min (longer if Bioconductor dependencies are compiled).
 
 Most computations were performed on a local server (Intel Xeon Platinum 8368 CPU, 152 cores, 251 GiB RAM) and on the High-Performance Computing Platform of the Center for Life Sciences (Peking University).
@@ -59,7 +60,15 @@ The downstream analysis for cell lines is organized into four main modules. It i
 The upstream analysis for tissue samples is located in the `tissue_upstream` folder and follows a similar workflow as the cell line analysis.
 
 ### Downstream
-The downstream analysis for tissue samples is located in the tissue_downstream folder. It includes normalization, cell type identification, TE calculation, spatial visualization, functional enrichment analysis, and subcellular translation heterogeneity analysis.
+The downstream analysis for tissue samples is located in the `tissue_downstream` folder. It includes normalization, cell type identification, TE calculation, spatial visualization, functional enrichment analysis, and subcellular translation heterogeneity analysis.
+
+## 🧬 AD Analysis
+
+### Upstream
+The upstream analysis for the 5xFAD samples followed a workflow similar to that used in the `tissue_upstream` folder.
+
+### Downstream
+The downstream analysis for the 5xFAD samples is located in the `AD_downstream` folder. It includes normalization, cell type identification, TE calculation, functional enrichment analysis, trajectory analysis, and spatial analysis.
 
 ---
 For more details, refer to the specific subdirectories and corresponding scripts in each folder.
