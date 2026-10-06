@@ -1,3 +1,6 @@
+## ===============================
+## 0. env
+## ===============================
 rm(list = ls())
 
 library(Seurat)
@@ -10,8 +13,10 @@ library(readr)
 
 setwd("/storage/lingyuan2/STATES_analysis/AD_downstream/12_SDEG")
 
-
-states <- readRDS("../05_plaque/states_with_plaque_info.rds")
+## ===============================
+## 1. read data
+## ===============================
+states <- readRDS("states_with_plaque_info.rds")
 
 target_type <- "14mAD"
 
@@ -29,24 +34,24 @@ get_ring_label <- function(ring_names) {
   }, USE.NAMES = FALSE)
 }
 
+gene_list_path <- "ring1-3_SDEG_totalRNA.csv"
+genes_to_keep <- unique(read.csv(gene_list_path, stringsAsFactors = FALSE)[[1]])  
 
-gene_list_path <- "ring30_14mAD_SDEG_totalRNA.csv"
-genes_to_keep <- unique(read.csv(gene_list_path, stringsAsFactors = FALSE)[[1]])  # first column as gene name
-
-
+## ===============================
+## 2. select 14mAD, analyze separately
+## ===============================
 ad_obj <- subset(states, subset = type == target_type)
 
 rings <- intersect(ordered_rings, unique(as.character(ad_obj@meta.data$ring)))
 
-
-total_mat <- GetAssayData(ad_obj, assay = "totalRNA", slot = "data")  # 用 data slot 求均值
+total_mat <- GetAssayData(ad_obj, assay = "totalRNA", slot = "data")  
 rb_mat    <- GetAssayData(ad_obj, assay = "rbRNA",    slot = "counts")
 
 total_mat <- as.matrix(total_mat)
 rb_mat    <- as(rb_mat, "dgCMatrix")
 
 total_mat <- total_mat[rownames(total_mat) %in% genes_to_keep, , drop = FALSE]
-rb_mat <- rb_mat[rownames(rb_mat) %in% rownames(total_mat), , drop = FALSE]  # 保证TE和total行顺序一致
+rb_mat <- rb_mat[rownames(rb_mat) %in% rownames(total_mat), , drop = FALSE]  
 
 n_gene <- nrow(total_mat)
 n_ring <- length(rings)
@@ -66,8 +71,7 @@ TE_mat <- matrix(
 
 total_mat_counts <- GetAssayData(ad_obj, assay = "totalRNA", slot = "counts")
 total_mat_counts <- as(total_mat_counts, "dgCMatrix")
-total_mat_counts <- total_mat_counts[rownames(total_mat), , drop = FALSE]  
-
+total_mat_counts <- total_mat_counts[rownames(total_mat), , drop = FALSE] 
 rb_mat <- rb_mat[rownames(total_mat_counts), , drop = FALSE]  
 
 for (r in rings) {
@@ -82,7 +86,6 @@ for (r in rings) {
   TE_mat[, r] <- sum_rb / sum_total_counts
 }
 
-
 TE_mat[!is.finite(TE_mat)] <- NA
 total_mean_mat[!is.finite(total_mean_mat)] <- NA
 
@@ -92,7 +95,9 @@ TE_mat <- TE_mat[valid_genes, , drop = FALSE]
 
 message("Genes retained for heatmap: ", nrow(total_mean_mat))
 
-
+## ===============================
+## 3. row scale (Z-score)
+## ===============================
 mat_total <- total_mean_mat
 mat_te <- TE_mat
 
@@ -107,7 +112,21 @@ ring_labels <- get_ring_label(colnames(mat_total_scaled))
 colnames(mat_total_scaled) <- ring_labels
 colnames(mat_te_scaled) <- ring_labels
 
+write.csv(
+  mat_total_scaled,
+  file = "totalRNA_zscore_matrix_14mAD_ring1-3SDEG.csv",
+  row.names = TRUE
+)
+write.csv(
+  mat_te_scaled,
+  file = "TE_zscore_matrix_14mAD_ring1-3SDEG.csv",
+  row.names = TRUE
+)
 
+
+## ===============================
+## 4. gene clustering based on totalRNA+TE (4 clusters)
+## ===============================
 if (nrow(mat_total_scaled) < 2) {
   warning("Too few genes for clustering in 14mAD")
 } else {
@@ -122,7 +141,9 @@ if (nrow(mat_total_scaled) < 2) {
   mat_te_scaled <- mat_te_scaled[gene_order, , drop = FALSE]
   row_split <- row_split[gene_order]
 
-
+  ## ===============================
+  ## 5. color mapping (quantile)
+  ## ===============================
   zlim <- c(-1, 0, 1)
 
   col_fun_total <- colorRamp2(
@@ -135,12 +156,14 @@ if (nrow(mat_total_scaled) < 2) {
     c("#2166ac", "#ffffff", "#b2182b")  
   )
 
-
+  ## ===============================
+  ## 6. ComplexHeatmap
+  ## ===============================
   ht_total <- Heatmap(
     matrix = mat_total_scaled,
     name = "totalRNA",
     col = col_fun_total,
-    show_row_names = TRUE,    
+    show_row_names = TRUE,   
     row_names_gp = gpar(fontsize = 6),  
     cluster_rows = FALSE,          
     cluster_columns = FALSE,
@@ -157,9 +180,9 @@ if (nrow(mat_total_scaled) < 2) {
     matrix = mat_te_scaled,
     name = "TE",
     col = col_fun_te,
-    show_row_names = TRUE,    
+    show_row_names = TRUE,   
     row_names_gp = gpar(fontsize = 6),  
-    cluster_rows = FALSE,         
+    cluster_rows = FALSE,          
     cluster_columns = FALSE,
     column_names_rot = 45,
     column_title = "TE (14mAD)",
@@ -172,12 +195,13 @@ if (nrow(mat_total_scaled) < 2) {
 
   ht_list <- ht_total + ht_te
 
-
   pdf("totalRNA_TE_ring_heatmap_14mAD_ring1-3SDEG_genelabel_split.pdf", width = 4, height = 8)
   draw(ht_list, heatmap_legend_side = "right")
   dev.off()
 
-
+  ## ===============================
+  ## 7. export cluster results
+  ## ===============================
   gene_cluster_df <- data.frame(
     gene = rownames(mat_te_scaled),
     cluster = row_split

@@ -3,10 +3,10 @@ rm(list = ls())
 library(VennDiagram)
 library(grid)
 
-total_genes <- 2837
-SDEG <- 66
+total_genes <- 3019
+SDEG <- 85
 PIG <- 57
-overlap <- 27
+overlap <- 29
 
 p_value <- phyper(overlap - 1, SDEG, total_genes - SDEG, PIG, lower.tail = FALSE)
 enrichment_ratio <- (overlap / PIG) / (SDEG / total_genes)
@@ -31,7 +31,7 @@ venn.plot <- draw.pairwise.venn(
   scaled = TRUE
 )
 
-pdf("venn_with_stats.pdf", width = 6, height = 7)
+pdf("venn_with_stats_3019.pdf", width = 6, height = 7)
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(2, 1, heights = unit(c(1, 8), "null"))))
 grid.text(stats_text, vp = viewport(layout.pos.row = 1, layout.pos.col = 1), gp = gpar(fontsize = 18))
