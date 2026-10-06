@@ -26,7 +26,7 @@ states@active.ident <- factor(states@active.ident, levels = mlg_levels)
 states$states_nn_alg1_label3 <- states@active.ident
 
 markers_mlg <- c(
-  "Lyz2","Ccl6","Cd9","Spp1","Ctsl","Cst7","Trem2","Apoe",
+  "Lyz2","Ccl6","Cd9","Spp1","Cst7","Trem2","Apoe",
   "Sparc","Gpr34",
   "Tmem119","P2ry12"
 )

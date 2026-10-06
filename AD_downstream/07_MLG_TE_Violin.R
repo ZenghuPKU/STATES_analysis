@@ -35,7 +35,6 @@ df_mlg <- df_te %>%
 print(table(df_mlg$label3))
 
 comp_mlg <- list(
-  c("MLG1", "MLG2"),   
   c("MLG2", "MLG3"),
   c("MLG1", "MLG3")
 )

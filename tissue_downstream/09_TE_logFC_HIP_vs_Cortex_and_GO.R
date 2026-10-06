@@ -107,8 +107,8 @@ for (i in 1:(length(group_names) - 1)) {
         negLogFDR = -log10(FDR),
         # Assign significance labels based on logFC and FDR thresholds
         Sig = case_when(
-          logFC > 0.5 & FDR < 0.05 ~ "Up",      
-          logFC < -0.5 & FDR < 0.05 ~ "Down",   
+          logFC > 0.4 & FDR < 0.05 ~ "Up",      
+          logFC < -0.4 & FDR < 0.05 ~ "Down",   
           TRUE ~ "NS"
         )
       )
@@ -144,7 +144,7 @@ for (i in 1:(length(group_names) - 1)) {
     p <- ggplot(result_df, aes(x = logFC_capped, y = negLogFDR_capped)) +
       geom_point(aes(color = Sig), alpha = 0.7, size = 1.2) +
       scale_color_manual(values = c("Up" = "#B2182B", "Down" = "#2166AC", "NS" = "gray")) +
-      geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed", color = "black") +
+      geom_vline(xintercept = c(-0.4, 0.4), linetype = "dashed", color = "black") +
       geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "black") +
       scale_x_continuous(limits = c(-4, 4)) +
       scale_y_continuous(limits = c(0, 55)) +

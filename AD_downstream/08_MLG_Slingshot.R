@@ -251,15 +251,12 @@ for (gn in genes_to_plot) {
       original_te <- NA_real_
     }
     
-    log_te <- log1p(original_te)
-    
     traj_list[[length(traj_list) + 1]] <- data.frame(
       Gene          = gn,
       Bin           = as.integer(b),
       PT_center     = bin_pt_center[as.character(b)],  # 这里就是 0–1 中心
       totalRNA_mean = totalRNA_mean_b,
       TE_raw        = original_te,
-      TE_log1p      = log_te,
       stringsAsFactors = FALSE
     )
   }
@@ -277,7 +274,7 @@ for (gn in unique(traj_df$Gene)) {
   
   df_g <- df_g %>%
     dplyr::filter(is.finite(totalRNA_mean),
-                  is.finite(TE_log1p),
+                  is.finite(TE_raw),
                   is.finite(PT_center))
   if (nrow(df_g) < 3) next
   
@@ -288,7 +285,7 @@ for (gn in unique(traj_df$Gene)) {
   )
   fit_te    <- stats::smooth.spline(
     x    = df_g$PT_center,
-    y    = df_g$TE_log1p,
+    y    = df_g$TE_raw,
     spar = 0.5
   )
   
@@ -299,29 +296,29 @@ for (gn in unique(traj_df$Gene)) {
   )
   
   total_smooth    <- predict(fit_total, x_new)$y
-  te_log1p_smooth <- predict(fit_te,    x_new)$y
+  te_raw_smooth   <- predict(fit_te,    x_new)$y
   
-  ok <- is.finite(total_smooth) & is.finite(te_log1p_smooth)
+  ok <- is.finite(total_smooth) & is.finite(te_raw_smooth)
   x_new           <- x_new[ok]
   total_smooth    <- total_smooth[ok]
-  te_log1p_smooth <- te_log1p_smooth[ok]
+  te_raw_smooth <- te_raw_smooth[ok]
   if (length(x_new) < 3) next
   
   df_plot <- data.frame(
     PT_center     = x_new,            
     totalRNA_mean = total_smooth,
-    TE_log1p      = te_log1p_smooth
+    TE_raw        = te_raw_smooth
   )
   
   total_min  <- min(df_plot$totalRNA_mean, na.rm = TRUE)
   total_max  <- max(df_plot$totalRNA_mean, na.rm = TRUE)
-  te_min     <- min(df_plot$TE_log1p,      na.rm = TRUE)
-  te_max     <- max(df_plot$TE_log1p,      na.rm = TRUE)
+  te_min     <- min(df_plot$TE_raw, na.rm = TRUE)
+  te_max     <- max(df_plot$TE_raw, na.rm = TRUE)
   total_span <- total_max - total_min
   te_span    <- te_max    - te_min
   if (total_span == 0 || te_span == 0) next
   
-  df_plot$TE_scaled <- (df_plot$TE_log1p - te_min) *
+  df_plot$TE_scaled <- (df_plot$TE_raw - te_min) *
     (total_span / te_span) + total_min
   
   inv_trans <- function(y) {
@@ -332,10 +329,10 @@ for (gn in unique(traj_df$Gene)) {
     geom_line(aes(y = totalRNA_mean, color = "totalRNA"), size = 0.7) +
     geom_line(aes(y = TE_scaled,     color = "TE"),       size = 0.7) +
     scale_y_continuous(
-      name = "totalRNA (Seurat data slot, log-normalized, smoothed)",
+      name = "totalRNA",
       sec.axis = sec_axis(
         trans = inv_trans,
-        name  = "TE (log1p(sum rbRNA / sum totalRNA), smoothed)"
+        name  = "TE"
       )
     ) +
     scale_color_manual(
@@ -344,7 +341,7 @@ for (gn in unique(traj_df$Gene)) {
         "TE"       = "#e31a1c"
       ),
       breaks = c("totalRNA", "TE"),
-      labels = c("totalRNA (mean, smooth)", "TE (log1p, smooth)")
+      labels = c("totalRNA (mean, smooth)", "TE (raw, smooth)")
     ) +
     theme_classic() +
     theme(
